@@ -110,7 +110,7 @@ Doing flag998
 Unknown file type: flag999: ASCII text
 ```
 
-Using cat on `flag999` gave me something that looked like *base64*, so I ran that through the `base64` decoder:
+Using `cat` on `flag999` gave me something that looked like *base64*, so I ran that through the `base64` decoder:
 ```
 $ cat flag999
 RFVDVEZ7YmFidXNoa2FzX3YwZGthX3dhc19oM3IzfQ==
