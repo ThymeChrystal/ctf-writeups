@@ -17,9 +17,9 @@ File: `og.jpg`
 jpg, exif, image
 
 ## Notes
-The `og.jpg` was an image of the 'orginal logo'.
+The `og.jpg` was an image of the 'original logo'.
 
-<img src="og.jpg" alt="Original Logo" width="200"/>
+<img src="og.jpg" alt="Original Logo" width="400"/>
 
 This one was pretty straightforward one. The first thing I do when I get an image is run `exiftool` to see what information we can get. The flag was in the Exif information in the `Creator` tag:
 ```
