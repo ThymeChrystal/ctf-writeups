@@ -19,6 +19,9 @@ files = []
 print("Looking for directories...")
 for root, dir_name, file_name in os.walk(start_path):
   for d in dir_name:
+    # Exclude hidden files - e.g. .git
+    if d.startswith(".") or root.startswith("./."):
+      continue
     dirs.append(os.path.join(root, d))
     print(f" + Adding {d}")
   

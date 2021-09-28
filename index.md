@@ -8,8 +8,14 @@ To enable keywords to be added for a write-up, create a title named `Keywords` (
 * [DownUnderCTF2021 - rabbit](./DownUnderCTF2021/rabbit.md)
 ### bzip2
 * [DownUnderCTF2021 - rabbit](./DownUnderCTF2021/rabbit.md)
+### exif
+* [DownUnderCTF2021 - retro](./DownUnderCTF2021/retro.md)
 ### gunzip
 * [DownUnderCTF2021 - rabbit](./DownUnderCTF2021/rabbit.md)
+### image
+* [DownUnderCTF2021 - retro](./DownUnderCTF2021/retro.md)
+### jpg
+* [DownUnderCTF2021 - retro](./DownUnderCTF2021/retro.md)
 ### Recursive zip
 * [DownUnderCTF2021 - rabbit](./DownUnderCTF2021/rabbit.md)
 ### unzip

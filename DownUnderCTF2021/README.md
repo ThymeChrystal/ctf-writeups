@@ -7,3 +7,4 @@ Here are the Writeups for some of my solves.
 
 ## Writeups
 * [rabbit](./rabbit.md)
+* [retro](./retro.md)
