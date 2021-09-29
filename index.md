@@ -8,12 +8,16 @@ To enable keywords to be added for a write-up, create a title named `Keywords` (
 * [DownUnderCTF2021 - rabbit](./DownUnderCTF2021/rabbit.md)
 ### buckets
 * [DownUnderCTF2021 - bad-bucket](./DownUnderCTF2021/bad-bucket.md)
+### Buffer Overflow
+* [DownUnderCTF2021 - deadcode](./DownUnderCTF2021/deadcode.md)
 ### bzip2
 * [DownUnderCTF2021 - rabbit](./DownUnderCTF2021/rabbit.md)
 ### cloud
 * [DownUnderCTF2021 - bad-bucket](./DownUnderCTF2021/bad-bucket.md)
 ### exif
 * [DownUnderCTF2021 - retro](./DownUnderCTF2021/retro.md)
+### Ghidra
+* [DownUnderCTF2021 - deadcode](./DownUnderCTF2021/deadcode.md)
 ### Google APIs
 * [DownUnderCTF2021 - bad-bucket](./DownUnderCTF2021/bad-bucket.md)
 ### Google Buckets
@@ -24,6 +28,10 @@ To enable keywords to be added for a write-up, create a title named `Keywords` (
 * [DownUnderCTF2021 - retro](./DownUnderCTF2021/retro.md)
 ### jpg
 * [DownUnderCTF2021 - retro](./DownUnderCTF2021/retro.md)
+### pwntools
+* [DownUnderCTF2021 - deadcode](./DownUnderCTF2021/deadcode.md)
+### Python
+* [DownUnderCTF2021 - deadcode](./DownUnderCTF2021/deadcode.md)
 ### Recursive zip
 * [DownUnderCTF2021 - rabbit](./DownUnderCTF2021/rabbit.md)
 ### unzip
