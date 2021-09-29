@@ -21,7 +21,7 @@ The link takes us to a website containing some buckets.
 
 <img src="bad-bucket-site.png" alt="Bad Buckets site" width="400"/>
 
-I was helped in this with a teammate, who told me that the first thing to try with Google Buckets is removing the filename from the end of the URL as this sometimes gives a list of buckets. Therefore, I removed the `index.html` from the URL and it listed the XML:
+I was helped on this by a teammate who told me that the first thing to try with Google Buckets is removing the filename from the end of the URL as this sometimes gives a list of buckets. Therefore, I removed the `index.html` from the URL and it listed the XML:
 ```xml
 <ListBucketResult xmlns="http://doc.s3.amazonaws.com/2006-03-01">
   <Name>the-bad-bucket-ductf</Name>
