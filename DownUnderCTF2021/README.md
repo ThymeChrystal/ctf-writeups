@@ -6,5 +6,6 @@ I took part with the [Und3rCr4ck3rs](https://ctftime.org/team/145155) team.
 Here are the Writeups for some of my solves.
 
 ## Writeups
+* [bad-bucket](./bad-bucket.md)
 * [rabbit](./rabbit.md)
 * [retro](./retro.md)

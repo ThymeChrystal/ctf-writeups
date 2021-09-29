@@ -6,10 +6,18 @@ To enable keywords to be added for a write-up, create a title named `Keywords` (
 ## Index
 ### bash
 * [DownUnderCTF2021 - rabbit](./DownUnderCTF2021/rabbit.md)
+### buckets
+* [DownUnderCTF2021 - bad-bucket](./DownUnderCTF2021/bad-bucket.md)
 ### bzip2
 * [DownUnderCTF2021 - rabbit](./DownUnderCTF2021/rabbit.md)
+### cloud
+* [DownUnderCTF2021 - bad-bucket](./DownUnderCTF2021/bad-bucket.md)
 ### exif
 * [DownUnderCTF2021 - retro](./DownUnderCTF2021/retro.md)
+### Google APIs
+* [DownUnderCTF2021 - bad-bucket](./DownUnderCTF2021/bad-bucket.md)
+### Google Buckets
+* [DownUnderCTF2021 - bad-bucket](./DownUnderCTF2021/bad-bucket.md)
 ### gunzip
 * [DownUnderCTF2021 - rabbit](./DownUnderCTF2021/rabbit.md)
 ### image
