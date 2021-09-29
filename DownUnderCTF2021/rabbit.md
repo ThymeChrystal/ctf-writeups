@@ -14,7 +14,7 @@ Author: Crem + z3kxTa
 Files: `flag.txt`
 
 ## Keywords
-Recursive zip, bzip2, gunzip, unzip, bash
+Recursive zip, bzip2, gunzip, unzip, bash, base64
 
 ## Notes
 I looked at the initial file using `file`:

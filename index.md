@@ -4,6 +4,9 @@ This is an index of keywords from CTF write-ups.
 To enable keywords to be added for a write-up, create a title named `Keywords` (e.g. ## Keywords) and follow that with comma separated list of keywords on the next line. Keywords can contain spaces, and will be listed as a single entry. The script to build this index will continue to assume it's reading keywords until it hits another title (line starting with #) or the file ends.
 
 ## Index
+### base64
+* [DownUnderCTF2021 - how-to-pronounce-GIF](./DownUnderCTF2021/how-to-pronounce-GIF.md)
+* [DownUnderCTF2021 - rabbit](./DownUnderCTF2021/rabbit.md)
 ### bash
 * [DownUnderCTF2021 - rabbit](./DownUnderCTF2021/rabbit.md)
 ### buckets
@@ -18,6 +21,10 @@ To enable keywords to be added for a write-up, create a title named `Keywords` (
 * [DownUnderCTF2021 - retro](./DownUnderCTF2021/retro.md)
 ### Ghidra
 * [DownUnderCTF2021 - deadcode](./DownUnderCTF2021/deadcode.md)
+### GIF
+* [DownUnderCTF2021 - how-to-pronounce-GIF](./DownUnderCTF2021/how-to-pronounce-GIF.md)
+### GIF frames
+* [DownUnderCTF2021 - how-to-pronounce-GIF](./DownUnderCTF2021/how-to-pronounce-GIF.md)
 ### Google APIs
 * [DownUnderCTF2021 - bad-bucket](./DownUnderCTF2021/bad-bucket.md)
 ### Google Buckets
@@ -28,10 +35,15 @@ To enable keywords to be added for a write-up, create a title named `Keywords` (
 * [DownUnderCTF2021 - retro](./DownUnderCTF2021/retro.md)
 ### jpg
 * [DownUnderCTF2021 - retro](./DownUnderCTF2021/retro.md)
+### Pillow/PIL
+* [DownUnderCTF2021 - how-to-pronounce-GIF](./DownUnderCTF2021/how-to-pronounce-GIF.md)
 ### pwntools
 * [DownUnderCTF2021 - deadcode](./DownUnderCTF2021/deadcode.md)
 ### Python
 * [DownUnderCTF2021 - deadcode](./DownUnderCTF2021/deadcode.md)
+* [DownUnderCTF2021 - how-to-pronounce-GIF](./DownUnderCTF2021/how-to-pronounce-GIF.md)
+### QR codes
+* [DownUnderCTF2021 - how-to-pronounce-GIF](./DownUnderCTF2021/how-to-pronounce-GIF.md)
 ### Recursive zip
 * [DownUnderCTF2021 - rabbit](./DownUnderCTF2021/rabbit.md)
 ### unzip
