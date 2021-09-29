@@ -18,6 +18,7 @@ GIF, GIF frames, QR codes, base64, Python, Pillow/PIL
 
 ## Notes
 The `challenge.gif` file was an animated GIF that seemed to show sections of a QR code in each frame:
+
 ![Challenge GIF](./challenge.gif)
 
 I used Python's [Pillow](https://pypi.org/project/Pillow/) library to get some information from it:
@@ -103,7 +104,7 @@ This produced 10 separate QR codes. I tried to use these QR code with a couple o
 | full8 ![QR code 8](./full8.png) | ASCII art of a rabbit
 | full9 ![QR code 9](./full9.png) | YouTube video - It's pronounced GIF. (https://www.youtube.com/watch?v=N1AL2EMvVy0)
 
-We can see the `full7.png` image gave us something that looked like `base64`, so I ran it through `base64` to see what it gave us:
+We can see the `full7.png` image gave us something that looked like `base64`, so I ran it through `base64`:
 ```
 $ echo fMV9oYVhYMHJfbjB3P30= | base64 -d
 |}a`}base64: invalid input
