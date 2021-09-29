@@ -23,11 +23,11 @@ The executable (`deadcode`) was opened in Ghidra, and this showed the `main()` f
 
 ![main function](main_function.png)
 
-Here we can see the input uses `gets()` to fill the `local_28` array, which is of size 24 chars. We can also see that `local_10` declared directly after the array.
+Here we can see the input uses `gets()` to fill the `local_28` array, which is of size 24 chars. We can also see that `local_10` is declared directly after the array.
 
-This means that we can overflow the `local_28` array and overwrite the `local_10` variable.
+This means that we can overflow the `local_28` array and overwrite the `local_10` variable on the stack (they will be contiguous).
 
-Later, we can see that `local_10` needs to be `0xdeadc0de` to give us a shell.
+Later in `main()`, we can see that `local_10` needs to be `0xdeadc0de` to give us a shell (via the `system("/bin/sh")` call).
 
 *pwntools* can help here. A Python script we created that does what we want is:
 ```python
@@ -43,7 +43,7 @@ p.sendline(payload)
 p.interactive()
 ```
 
-When run, this gives a shell, and enables us to `cat` a file named *flag.txt* on the server:
+When run, this gives the shell, and enables us to `cat` a file named *flag.txt* on the server:
 ```
 $ python3 get_flag.py
 [+] Opening connection to pwn-2021.duc.tf on port 31916: Done
