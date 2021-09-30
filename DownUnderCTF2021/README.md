@@ -8,6 +8,7 @@ Here are the Writeups for some of my solves.
 ## Writeups
 * [bad-bucket](./bad-bucket.md)
 * [deadcode](./deadcode.md)
-* [how-to-pronounce-GIF](./how-to-pronounce-GIF.md)
 * [rabbit](./rabbit.md)
 * [retro](./retro.md)
+* [how-to-pronounce-GIF](./how-to-pronounce-GIF.md)
+* [back-on-the-rails](./back-on-the-rails.md)

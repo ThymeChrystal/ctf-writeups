@@ -5,8 +5,8 @@ To enable keywords to be added for a write-up, create a title named `Keywords` (
 
 ## Index
 ### base64
-* [DownUnderCTF2021 - how-to-pronounce-GIF](./DownUnderCTF2021/how-to-pronounce-GIF.md)
 * [DownUnderCTF2021 - rabbit](./DownUnderCTF2021/rabbit.md)
+* [DownUnderCTF2021 - how-to-pronounce-GIF](./DownUnderCTF2021/how-to-pronounce-GIF.md)
 ### bash
 * [DownUnderCTF2021 - rabbit](./DownUnderCTF2021/rabbit.md)
 ### buckets
@@ -33,8 +33,12 @@ To enable keywords to be added for a write-up, create a title named `Keywords` (
 * [DownUnderCTF2021 - rabbit](./DownUnderCTF2021/rabbit.md)
 ### image
 * [DownUnderCTF2021 - retro](./DownUnderCTF2021/retro.md)
+### image search
+* [DownUnderCTF2021 - back-on-the-rails](./DownUnderCTF2021/back-on-the-rails.md)
 ### jpg
 * [DownUnderCTF2021 - retro](./DownUnderCTF2021/retro.md)
+### OSINT
+* [DownUnderCTF2021 - back-on-the-rails](./DownUnderCTF2021/back-on-the-rails.md)
 ### Pillow/PIL
 * [DownUnderCTF2021 - how-to-pronounce-GIF](./DownUnderCTF2021/how-to-pronounce-GIF.md)
 ### pwntools
