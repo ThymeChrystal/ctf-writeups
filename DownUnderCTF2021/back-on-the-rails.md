@@ -61,14 +61,14 @@ I uploaded the image to [Google](https://images.google.com/) and [Yandex](https:
 
 Finally, I used the image with the search terms `train station australia graffiti` which yielded the snippet of a search result below, where the bottom-left image looks like it might be our station:
 
-<img src="./google-search-pic-botr.png" alt="Google search result" width="500px" />
+<img src="./google-search-pic-botr.png" alt="Google search result" width="600px" />
 
-Clicking on the bottom-left image took me to a news article which included the Google search result picture with a caption naming it as General Motors station:
+Clicking on the bottom-left image took me to a news article which included the Google search result image with a caption naming it as General Motors station:
 
-<img src="./news-article-botr.png" alt="News article" width="500px" />
+<img src="./news-article-botr.png" alt="News article" width="600px" />
 
 To check whether this really was the station we were looking for, I did a Google image search for `General Motors station australia`. This brought up an image that closely matched the original image:
 
-<img src="./graffiti-pic-botr.png" alt="General Motors result" width="500px" />
+<img src="./graffiti-pic-botr.png" alt="General Motors result" width="600px" />
 
 This confirms that the station's name is General Motors, making the final flag `DUCTF{general_motors}`.
