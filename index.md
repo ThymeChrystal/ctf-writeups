@@ -4,6 +4,13 @@ This is an index of keywords from CTF write-ups.
 To enable keywords to be added for a write-up, create a title named `Keywords` (e.g. ## Keywords) and follow that with comma separated list of keywords on the next line. Keywords can contain spaces, and will be listed as a single entry. The script to build this index will continue to assume it's reading keywords until it hits another title (line starting with #) or the file ends.
 
 ## Index
+
+---
+
+A [B](#base64) [C](#cloud) D [E](#exif) F [G](#ghidra) H [I](#image) [J](#jpg) K L M N [O](#osint) [P](#pillow/pil) [Q](#qr-codes) [R](#recursive-zip) S T [U](#unzip) V W X Y Z 
+
+---
+
 ### base64
 * [DownUnderCTF2021 - rabbit](./DownUnderCTF2021/rabbit.md)
 * [DownUnderCTF2021 - how-to-pronounce-GIF](./DownUnderCTF2021/how-to-pronounce-GIF.md)

@@ -7,6 +7,7 @@ import os
 import re
 import collections
 from shutil import copyfile
+from string import ascii_uppercase
 
 def lower_key(pair):
   key, value = pair
@@ -55,6 +56,13 @@ for d in dirs:
 # Finally, build the index
 print("Building index...")
 index = {}
+
+# Create an alphabetical index into the word index
+# to show at thw top of the list for quick access
+alpha_refs = {}
+for i in ascii_uppercase:
+  alpha_refs[i] = ''
+
 for f in files:
   with open(f, "r") as in_file:
     text = in_file.readlines()
@@ -70,6 +78,9 @@ for f in files:
             if w == '':
               continue
             index.setdefault(w, []).append(f)
+            curr_alpha = alpha_refs[w[0].upper()]
+            if curr_alpha == '' or w.lower() < curr_alpha.lower():
+              alpha_refs[w[0].upper()] = w
         else:
           break
       else:
@@ -81,6 +92,17 @@ for f in files:
 index = collections.OrderedDict(sorted(index.items(), key=lower_key))
 copyfile("index-template.txt", "index.md")
 with open('index.md', "a") as i:
+  # Write alphabetical links at the top of the page
+  i.write('\n---\n\n')
+  for k, v in alpha_refs.items():
+    if v == '':
+      i.write(f"{k} ")
+    else:
+      val = v.replace(' ', '-')
+      i.write(f"[{k}](#{val.lower()}) ")
+  i.write('\n\n---\n\n')
+
+  # Write the word index
   for k, v in index.items():
     print(f" + Adding entries for {k}")
     i.write(f"### {k}\n")
