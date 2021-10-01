@@ -7,7 +7,7 @@ To enable keywords to be added for a write-up, create a title named `Keywords` (
 
 ---
 
-A [B](#base64) [C](#cloud) D [E](#exif) F [G](#ghidra) H [I](#image) [J](#jpg) K L M N [O](#osint) [P](#pillow/pil) [Q](#qr-codes) [R](#recursive-zip) S T [U](#unzip) V W X Y Z 
+A [B](#base64) [C](#cloud) D [E](#exif) F [G](#ghidra) H [I](#image) [J](#jpg) K L M N [O](#osint) [P](#pillowpil) [Q](#qr-codes) [R](#recursive-zip) S T [U](#unzip) V W X Y Z 
 
 ---
 

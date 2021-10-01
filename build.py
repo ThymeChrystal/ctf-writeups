@@ -98,7 +98,7 @@ with open('index.md', "a") as i:
     if v == '':
       i.write(f"{k} ")
     else:
-      val = v.replace(' ', '-')
+      val = v.replace(' ', '-').replace('/', '')
       i.write(f"[{k}](#{val.lower()}) ")
   i.write('\n\n---\n\n')
 
