@@ -86,7 +86,7 @@ would output:
 
 So by specifying our format specifier of `%n$s` and having no parameters, we can print out any strings in various memory locations. By putting this in a loop, we can plough through memory printing out strings.
 
-> *Note*: various items on the stack may not be printable strings, and my crash the program. If you get a segmentation fault, just try another location
+> *Note*: various items on the stack may not be printable strings, and may crash the program. If you get a segmentation fault, just try another location
 
 I wrote a Python script with `pwntools` to test this:
 ```python
@@ -164,7 +164,7 @@ b'\nHello there, '
 
 We can see when we send `%6$s` we get the flag!
 
-We can get the same result manually, now we know the locations, by answering `%6$s` to the question:
+We can get the same result manually, now we know the location, by answering `%6$s` to the question:
 ```
 $ nc pwn-2021.duc.tf 31918
 What is your name?
