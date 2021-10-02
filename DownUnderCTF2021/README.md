@@ -10,5 +10,6 @@ Here are the Writeups for some of my solves.
 * [deadcode](./deadcode.md)
 * [rabbit](./rabbit.md)
 * [retro](./retro.md)
+* [leaking-like-a-sieve](./leaking-like-a-sieve.md)
 * [how-to-pronounce-GIF](./how-to-pronounce-GIF.md)
 * [back-on-the-rails](./back-on-the-rails.md)

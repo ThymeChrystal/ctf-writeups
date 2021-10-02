@@ -28,6 +28,7 @@ A [B](#base64) [C](#cloud) D [E](#exif) F [G](#ghidra) H [I](#image) [J](#jpg) K
 * [DownUnderCTF2021 - retro](./DownUnderCTF2021/retro.md)
 ### Ghidra
 * [DownUnderCTF2021 - deadcode](./DownUnderCTF2021/deadcode.md)
+* [DownUnderCTF2021 - leaking-like-a-sieve](./DownUnderCTF2021/leaking-like-a-sieve.md)
 ### GIF
 * [DownUnderCTF2021 - how-to-pronounce-GIF](./DownUnderCTF2021/how-to-pronounce-GIF.md)
 ### GIF frames
@@ -48,8 +49,11 @@ A [B](#base64) [C](#cloud) D [E](#exif) F [G](#ghidra) H [I](#image) [J](#jpg) K
 * [DownUnderCTF2021 - back-on-the-rails](./DownUnderCTF2021/back-on-the-rails.md)
 ### Pillow/PIL
 * [DownUnderCTF2021 - how-to-pronounce-GIF](./DownUnderCTF2021/how-to-pronounce-GIF.md)
+### printf
+* [DownUnderCTF2021 - leaking-like-a-sieve](./DownUnderCTF2021/leaking-like-a-sieve.md)
 ### pwntools
 * [DownUnderCTF2021 - deadcode](./DownUnderCTF2021/deadcode.md)
+* [DownUnderCTF2021 - leaking-like-a-sieve](./DownUnderCTF2021/leaking-like-a-sieve.md)
 ### Python
 * [DownUnderCTF2021 - deadcode](./DownUnderCTF2021/deadcode.md)
 * [DownUnderCTF2021 - how-to-pronounce-GIF](./DownUnderCTF2021/how-to-pronounce-GIF.md)
