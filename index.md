@@ -7,7 +7,7 @@ To enable keywords to be added for a write-up, create a title named `Keywords` (
 
 ---
 
-A [B](#base64) [C](#cloud) D [E](#exif) F [G](#ghidra) H [I](#image) [J](#jpg) K L M N [O](#osint) [P](#pillowpil) [Q](#qr-codes) [R](#recursive-zip) S T [U](#unzip) V W X Y Z 
+A [B](#base64) [C](#c) D [E](#exif) F [G](#ghidra) H [I](#image) [J](#jpg) K L M N [O](#osint) [P](#pillowpil) [Q](#qr-codes) [R](#recursive-zip) S T [U](#unzip) V W X Y Z 
 
 ---
 
@@ -22,6 +22,8 @@ A [B](#base64) [C](#cloud) D [E](#exif) F [G](#ghidra) H [I](#image) [J](#jpg) K
 * [DownUnderCTF2021 - deadcode](./DownUnderCTF2021/deadcode.md)
 ### bzip2
 * [DownUnderCTF2021 - rabbit](./DownUnderCTF2021/rabbit.md)
+### C
+* [GeneralNotes - printf](./GeneralNotes/printf.md)
 ### cloud
 * [DownUnderCTF2021 - bad-bucket](./DownUnderCTF2021/bad-bucket.md)
 ### exif
@@ -51,9 +53,11 @@ A [B](#base64) [C](#cloud) D [E](#exif) F [G](#ghidra) H [I](#image) [J](#jpg) K
 * [DownUnderCTF2021 - how-to-pronounce-GIF](./DownUnderCTF2021/how-to-pronounce-GIF.md)
 ### printf
 * [DownUnderCTF2021 - leaking-like-a-sieve](./DownUnderCTF2021/leaking-like-a-sieve.md)
+* [GeneralNotes - printf](./GeneralNotes/printf.md)
 ### pwntools
 * [DownUnderCTF2021 - deadcode](./DownUnderCTF2021/deadcode.md)
 * [DownUnderCTF2021 - leaking-like-a-sieve](./DownUnderCTF2021/leaking-like-a-sieve.md)
+* [GeneralNotes - printf](./GeneralNotes/printf.md)
 ### Python
 * [DownUnderCTF2021 - deadcode](./DownUnderCTF2021/deadcode.md)
 * [DownUnderCTF2021 - how-to-pronounce-GIF](./DownUnderCTF2021/how-to-pronounce-GIF.md)

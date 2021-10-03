@@ -5,3 +5,4 @@ There is also an [index](./index.md) referencing keywords in the write-ups so it
 
 ## CTFs
 * [DownUnderCTF2021](./DownUnderCTF2021)
+* [GeneralNotes](./GeneralNotes)
