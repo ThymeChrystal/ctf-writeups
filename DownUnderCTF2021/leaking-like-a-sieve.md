@@ -73,7 +73,7 @@ One thing we can see is that the buffer is passed to `printf()` without a format
 
 As there is no format string when our name is printed out, we can specify one in our input, and this can expose items on the stack to us for reading and even writing to.
 
-I have [some notes on printf()](../General-Notes/printf.md), but this is a relatively simple exploit. We simply want to read a string from the stack. `%s` is used to treat parameters as strings, so we can just try printing strings from various positions in the stack and see if it is our flag.
+I have [some notes on printf()](../GeneralNotes/printf.md), but this is a relatively simple exploit. We simply want to read a string from the stack. `%s` is used to treat parameters as strings, so we can just try printing strings from various positions in the stack and see if it is our flag.
 
 In `printf()`, we can change which parameter applies to a format string with `%n$`. For example:
 ```c
