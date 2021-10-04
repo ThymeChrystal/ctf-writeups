@@ -90,25 +90,36 @@ int main()
 Compiling and running we now get:
 ```
 $ gcc mismatch.c -o mismatch
-mismatch.c:12:22: warning: format specifies type 'int' but the argument has type 'char *' [-Wformat]
-  printf("Hi, %d\n", s);
-              ~~     ^
-              %s
-mismatch.c:15:30: warning: format specifies type 'unsigned int' but the argument has type 'char *' [-Wformat]
-  printf("%x's age is %p\n", s, i);
-          ~~                 ^
-          %s
-mismatch.c:15:33: warning: format specifies type 'void *' but the argument has type 'int' [-Wformat]
-  printf("%x's age is %p\n", s, i);
-                      ~~        ^
-                      %d
-3 warnings generated.
 $ ./mismatch 
 Hello, world!
 Hi, 1871460560
 6f8c38d0's age is 0xa
 ```
-> *Note*: We do get warnings from the compiler that we have incorrectly matched format specifiers to variable types, but `printf` doesn't care, and we can still run this code.
+
+> It should be pointed out that if you build using `gcc` with `-Wall`, it does warn you about the `printf` mismatches:
+```
+$ gcc mismatch.c -o mismatch -Wall
+mismatch.c: In function ‘main’:
+mismatch.c:12:16: warning: format ‘%d’ expects argument of type ‘int’, but argument 2 has type ‘char *’ [-Wformat=]
+   12 |   printf("Hi, %d\n", s);
+      |               ~^     ~
+      |                |     |
+      |                int   char *
+      |               %s
+mismatch.c:15:12: warning: format ‘%x’ expects argument of type ‘unsigned int’, but argument 2 has type ‘char *’ [-Wformat=]
+   15 |   printf("%x's age is %p\n", s, i);
+      |           ~^                 ~
+      |            |                 |
+      |            unsigned int      char *
+      |           %s
+mismatch.c:15:24: warning: format ‘%p’ expects argument of type ‘void *’, but argument 3 has type ‘int’ [-Wformat=]
+   15 |   printf("%x's age is %p\n", s, i);
+      |                       ~^        ~
+      |                        |        |
+      |                        void *   int
+      |                       %d
+```
+This is true of things we'll do in the rest of this note, but for brevity, we'll always build with only basic warnings on.
 
 Finally, in normal operation of `printf`, we don't have to use the parameters in the order in which they are specified. This feature of `printf` isn't always mentioned in `printf` descriptions, but it's very useful to us.
 
@@ -123,7 +134,7 @@ int main()
   int k = 5;
   char c = 'A';
 
-  // Normal use - you can't mis positional and non-positional
+  // Normal use - you can't mix positional and non-positional
   // We can repeatedly use an argument
   printf("%1$d, %4$c, %2$d, %4$c, %3$d, %4$c\n", i, j, k, c);
 
@@ -131,8 +142,6 @@ int main()
   // We can skip the first argument
   // Arguments will continue to be grabbed from
   // after the specified argunent
-  // We'll get a warning about mixing positional and non-positional,
-  // but it's useful knowledge
   printf("%2$d %d %c\n", i, j, k, c);
 
   return 0;
@@ -142,21 +151,26 @@ int main()
 When compiled and run, we can see how the positional arguments work:
 ```
 $ gcc argument-select.c -o argument-select
-argument-select.c:20:17: warning: cannot mix positional and non-positional arguments in format string [-Wformat]
-  printf("%2$d %d %c\n", i, j, k, c);
-               ~^
-1 warning generated.
 $ ./argument-select 
 20, A, 10, A, 5, A
 10 5 A
 ```
 
-We get the warning about mixing positional and non-positional arguments, but it still works!
-
 So how can we exploit this?
 
 ### printf vulnerable usage
-What happens if we use `printf` with format specifiers, but we don't specify any arguments?
+What happens if we use `printf` with format specifiers, but we don't specify any arguments? Let's try:
+```c
+#include <stdio.h>
+
+int main()
+{
+  printf("%x\n%x\n%x\n");
+
+  return 0;
+}
+```
+
 
 ### Reading through the stack
 
