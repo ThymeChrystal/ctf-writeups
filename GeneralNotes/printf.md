@@ -119,7 +119,7 @@ mismatch.c:15:24: warning: format ‘%p’ expects argument of type ‘void *’
       |                        void *   int
       |                       %d
 ```
-This is true of things we'll do in the rest of this note, but for brevity, we'll always build with only basic warnings on.
+> This is true of things we'll do in the rest of this note, but for brevity, we'll always build with only basic warnings on.
 
 Finally, in normal operation of `printf`, we don't have to use the parameters in the order in which they are specified. This feature of `printf` isn't always mentioned in `printf` descriptions, but it's very useful to us.
 
