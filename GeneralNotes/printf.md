@@ -140,8 +140,8 @@ int main()
 
 
   // We can skip the first argument
-  // Arguments will continue to be grabbed from
-  // after the specified argunent
+  // What happens with the subsequent specifiers
+  // is compiler/platform dependent.
   printf("%2$d %d %c\n", i, j, k, c);
 
   return 0;
@@ -155,8 +155,14 @@ $ ./argument-select
 20, A, 10, A, 5, A
 10 5 A
 ```
+> This output is from Clang (aliased as gcc) on MacOS X. Using gcc on Linux, the output is:
+> 20, A, 10, A, 5, A
+> 10 20
+>
+> where the arguments reset and start from the beginning, showing argument 1, 2 as integers, and then
+> 3 as a character (as the value is 10, it just shows a line feed).
 
-So how can we exploit this?
+So how can we exploit `printf`?
 
 ### printf vulnerable usage
 What happens if we use `printf` with format specifiers, but we don't specify any arguments? Let's try:
@@ -165,11 +171,92 @@ What happens if we use `printf` with format specifiers, but we don't specify any
 
 int main()
 {
-  printf("%x\n%x\n%x\n");
+  printf("%d\n%d\n%d\n");
 
   return 0;
 }
 ```
+We still get some output:
+```
+$ gcc no-args.c -o no-args
+$ ./no-args 
+-2060149592
+-2060149576
+-1444055272
+```
+We still get some output. So where are those values coming from?
+
+Let's print more (and as hex) and see if we can work it out:
+```c
+#include <stdio.h>
+#include <string.h>
+
+int main()
+{
+  // Some variables - unused, but show up later
+  char s[] = "AAAAAAAAAAAA";
+  int a = 1;
+  int b = 2;
+  int c = 3;
+
+  // Holds are printf format strings so we can
+  // build them in a loop.
+  char x[15];
+
+  for (unsigned int i=1; i<20; ++i)
+  {
+    // Create our format strings for %x
+    sprintf(x, "%1$d \t %%%1$d$x\n", i);
+
+    // Show us what happens with no arguments
+    printf(x);
+  }
+
+  return 0;
+}
+```
+This prints out the offset parameter number followed by the contents at that parameter, interpreted as a hexadecimal integer:
+```
+$ gcc -m32 no-args-x.c -o no-args-x
+$ ./no-args-x 
+1 	 5660e008
+2 	 2
+3 	 5660d1c0
+4 	 0
+5 	 0
+6 	 5660c034
+7 	 37f62a28
+8 	 25200920
+9 	 a782439
+10 	 a78
+11 	 f7db3c1e
+12 	 41f613fc
+13 	 41414141
+14 	 41414141
+15 	 414141
+16 	 3
+17 	 2
+18 	 1
+19 	 13
+```
+Now we can start to see what we're looking at. The first byte of offset 12, and all of offsets 13, 14 and 15 contain 12 ASCII values for the letter 'A'. Offset 16 has the value 3 in it, 17 has 2, and 18 has 1. These are the variables from our code! Our `s`, `a`, `b` and `c`. These are values off the stack!
+
+We build this executable as 32-bit so it shows things a bit more clearly than a 64-bit executable. Below is the output from a 32-bit and 64-bit executables showing hexadecimal integers (%x) and pointers (%p) to clarify. It shows the relevant offsets only, which have shifted from above with the addition of more local variables to handle the %p output, and change between the 64-bit and 32-bit executables:
+
+|            | 32-bit |         |            | 64-bit |        |
+| :-------:  | ------ | ------- | -----      | ------ | ------ |
+| **Offset** | **%x** | **%p**  | **Offset** | **%x** | **%p** |
+| 13 | 33312520 | 0x33312520 | 13 | 0        | (nil)              |
+| 14 | a7824    | 0xa7824    | 14 | 41c631f0 | 0x4141414141c631f0 |
+| 15 | f7d7ac1e | 0xf7d7ac1e | 15 | 41414141 | 0x41414141414141   |
+| 16 | 41f283fc | 0x41f283fc | 16 | 3        | 0x200000003        |
+| 17 | 41414141 | 0x41414141 | 17 | 1        | 0x1100000001       |
+| 18 | 41414141 | 0x41414141 | 18 | f3c631f0 | 0x561ef3c631f0     |
+| 19 | 414141   | 0x414141   | 19 | 8131bd0a | 0x7ff58131bd0a     |
+| 20 | 3        | 0x3        | 20 | 72064298 | 0x7ffd72064298     |
+| 21 | 2        | 0x2        | 21 | 0        | 0x100000000        |
+| 22 | 1        | 0x1        | 22 | f3c63145 | 0x561ef3c63145     |
+| 23 | 17       | 0x17       | 23 | 8131b7cf | 0x7ff58131b7cf     |
 
 
 ### Reading through the stack
