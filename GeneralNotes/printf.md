@@ -13,7 +13,7 @@ This note gives some details of the `printf` format specifier exploit
 printf, C, pwntools 
 
 ## Notes
-In certain circumstances, the C language's workhorse console display function, `printf()` can be exploited to read or write to memory.
+In certain circumstances, the C language's workhorse console display function, `printf()`, can be exploited to read or write to memory.
 
 * [printf normal usage](#printf-normal-usage)
 * [printf vulnerable usage](#printf-vulnerable-usage)
@@ -28,7 +28,7 @@ I won't cover all the possible format specifiers in this note - there are plenty
 | Specifier | Description
 | ------    | ------
 | %c | Display an argument as a char
-| %d | Display an argument signed decimal integer
+| %d | Display an argument as a signed decimal integer
 | %x | Display an argument as an unsigned hexadecimal integer
 | %p | Display an argument as a pointer
 | %s | Display an argument as a string
@@ -184,7 +184,7 @@ $ ./no-args
 -2060149576
 -1444055272
 ```
-We still get some output. So where are those values coming from?
+So where are those values coming from?
 
 Let's print more (and as hex) and see if we can work it out:
 ```c
@@ -239,9 +239,11 @@ $ ./no-args-x
 18 	 1
 19 	 13
 ```
-Now we can start to see what we're looking at. The first byte of offset 12, and all of offsets 13, 14 and 15 contain 12 ASCII values for the letter 'A' (`0x41`). Offset 16 has the value 3 in it, 17 has 2, and 18 has 1. These are the variables from our code! Our `s`, `a`, `b` and `c`. These are values off the stack! If we don't specify arguments for our `printf` format string, `printf` will take values from the current stack pointer, and continue down the stack to satisfy subsequent requests.
+Now we can start to see what we're looking at. The first byte of offset 12, and all of offsets 13, 14 and 15 contain 12 ASCII values for the letter 'A' (`0x41`). Offset 16 has the value 3 in it, 17 has 2, and 18 has 1. These are the variables from our code! Our `s`, `a`, `b` and `c`. These are values off the stack! 
 
-As a side note, I built this executable as 32-bit so it shows things a bit more clearly than a 64-bit executable. Below is the output from a 32-bit and 64-bit executables showing hexadecimal integers (`%x`) and pointers (`%p`) to clarify. It shows the relevant offsets only, which have shifted from above with the addition of more local variables to handle the %p output, and also change between the 64-bit and 32-bit executables:
+If we don't specify arguments for our `printf` format string, `printf` will take values from the current stack pointer, and continue down the stack to satisfy subsequent requests.
+
+As a side note, I built this executable as 32-bit so it shows things a bit more clearly than a 64-bit executable. Below is the output from a 32-bit and 64-bit executables showing hexadecimal integers (`%x`) and pointers (`%p`) to clarify. It shows the relevant offsets only, which have shifted from above with the addition of more local variables to handle the %p output, and also the change between the 64-bit and 32-bit executables:
 
 |            | 32-bit |         |            | 64-bit |        |
 | :-------:  | ------ | ------- | -----      | ------ | ------ |
@@ -258,13 +260,13 @@ As a side note, I built this executable as 32-bit so it shows things a bit more 
 | 22 | 1        | 0x1        | 22 | f3c63145 | 0x561ef3c63145     |
 | 23 | 17       | 0x17       | 23 | 8131b7cf | 0x7ff58131b7cf     |
 
-Here we can see that `%p` shows the same information as `%x` in 32-bit executables, but in the 64-bit version, the `%p` shows the full 64-bits, while `%x` just shows the 32 Least Significant Bits (LSBs) of each address. As the 64-bit executable has 64-bit pointers, the `%x` will step 64-bits for each position specified, but only show 32-bits of information.
+Here we can see that `%p` shows the same information as `%x` in 32-bit executables, but in the 64-bit version, the `%p` shows the full 64-bits, while `%x` just shows the 32 Least Significant Bits (LSBs) of each address. As the 64-bit executable has 64-bit pointers, the `%x` will step 64-bits for each offset specified, but only show 32-bits of information.
 
 This means the `%x` only shows us part of the multiple `A` string, and doesn't show the value `2`, which is actually in the most significant 32 bits of offset 16.
 
 I advise using `%p` for displaying stack contents (at least initially). It will display full contents for every location (wheras `%x` may not), and won't crash (as `%s` does if it doesn't find a valid string) or display strange characters (like `%c`) or difficult to interpret numbers (like `%d`).
 
-But how does any of this help us? It's very unlikely someone has accidentally created a series of format strings in their code without arguments and it prints out the stack and they've tested it and not noticed!
+But how does any of this help us? It's very unlikely someone has accidentally created a series of format strings in their code without arguments which print out the stack and they've tested it and not noticed!
 
 Well, something that happens more commonly (at least in CTFs) is a program taking user input and echoing it back to the user without a format string:
 ```c
@@ -284,7 +286,7 @@ int main(void)
   } while(strcmp(q, user_input) != 0);
 }
 ```
-So, instead of using something like `printf("%s\n", user_input);` this program simply prints the user input directly back at the screen. This means we can send a format string to it and we can see what's on the stack!
+So, instead of using something like `printf("%s\n", user_input);` this program simply prints the user input directly back at the console. This means we can send a format string to it and we see what's on the stack!
 ```
 $ gcc -m32 user-input.c -o user-input
 $ ./user-input 
@@ -348,7 +350,7 @@ What do you want me to say? > quit
 quit
 ```
 
-We search through the stack for the pointer that the program displayed to us. Here we find it at position 15, and confirm it with a `%15$p`. Then we can print the string that address points to with `%15$s`.
+We search through the stack for the pointer that the program displayed to us. Here we find it at position 15, and confirm it with a `%15$p`. Then we can print the string that the address at offset 15 points to with `%15$s`.
 
 > *Note*: If the executable doesn't change, the offset for the location of items on the stack stays the same. For example, subsequent runs of the above will always have the string pointer at offset 15.
 
@@ -411,7 +413,7 @@ for i in range(1, 30):
 # We got the pointer (or just completed the loop)
 # Now use %n$s at that position
 print(f"Found pointer at position {i}")
-prompt = p.recvuntil("> ")
+p.recvuntil("> ")
 p.sendline(f"%{i}$s")
 str_response = p.recvline().strip().decode("utf-8")
 print(f"String is: {str_response}")
@@ -457,7 +459,7 @@ for i in range(1, 501):
 p.close()
 ```
 
-We could update this easily to print out `%p`, `%x`, `%c`, `%d`, etc. Strings, however, add an extra problem. Because strings assume they're being given pointers to `char *` arrays, it will try to get a string at address it reads off the stack. This means it can crash the program for out of scope accesses, causing `Segmentation fault` errors.
+We could update this easily to print out `%p`, `%x`, `%c`, `%d`, etc. `%s`, however, adds an extra problem. Because the `%s` specifier assumes it's being passed a pointer to a `char *` array, it will try to get a string at the address it reads off the stack. This means `%s` can crash the program for out of scope memory accesses, causing `Segmentation fault` errors.
 
 This just means we have to continually open and close the program within a loop to be able to read through the stack looking for strings:
 ```python
@@ -523,7 +525,7 @@ Done!
 
 Now we don't even need the program to tell us where the pointer is on the stack. We can just try everything! 
 
-We have extra information, too. We know that 'Position 15' in those code contains a pointer to the stack, so we now know where the stack sits in memory. This could be useful for other exploits (not covered here).
+We have extra information, too. We know that 'Position 15' in the code contains a pointer to the stack, so we now know where the stack sits in memory. This could be useful for other exploits (including techniques not covered here).
 
 We can even print out a string that doesn't appear on the stack, only the heap:
 ```c
@@ -569,7 +571,7 @@ Position 8: You entered: 0x55fc52397250
 Position 12: You entered: 0x55f410475250
 ```
 
-But when we run our string output program we still find the password string, and can get in the software:
+But when we run our string output program we still find the password string, and can use it in the program:
 ```
 $ python3 dump-strings-heap.py 
 Position 1: You entered: You entered: ssword? >
@@ -598,7 +600,7 @@ What's the password? > Passw0rd
 You're in!
 ```
 
-> *Note*: I haven't included the Python code for `dump-stack-pass.py` and `dump-strings-heap.py` as they are similar to the previous Python code, just with the executable name changes and some changes the `recv*()` function order.
+> *Note*: I haven't included the Python code for `dump-stack-pass.py` and `dump-strings-heap.py` as they are similar to the previous Python code, just with the executable name changed and some changes the `recv*()` function order.
 
 So now we can dump the stack, and also find out roughly where the stack and heap are in memory by looking at where pointers for strings point to.
 
