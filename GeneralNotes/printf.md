@@ -908,3 +908,4 @@ Wow! You did convince me! 1 + 1 = 3!
 You deserve the secret word: Snoogle!
 Done!
 ```
+Finally, let's do away with any finesse and brute force the code. This is similar to what we did when finding any strings on the stack.
