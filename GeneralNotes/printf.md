@@ -1003,7 +1003,7 @@ Success!
 
 For a final example, lets pull everything together.
 
-You have an executable built from the following code:
+Let's say you have an executable built from the following code:
 ```c
 #include <stdio.h>
 #include <string.h>
